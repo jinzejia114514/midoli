@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRTI-X 混沌人格测试 v2.6</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, #f093fb, #f5576c, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+        }
+
+        .progress-container {
+            margin: 25px 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .question-section {
+            display: none;
+        }
+
+        .question-section.active {
+            display: block;
+        }
+
+        .welcome-section,
+        .results-section {
+            text-align: center;
+        }
+
+        .welcome-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .welcome-section .description {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .welcome-section .description h3 {
+            color: #f093fb;
+            margin-bottom: 15px;
+        }
+
+        .welcome-section .description ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .welcome-section .description li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .welcome-section .description li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #f5576c;
+        }
+
+        .dimension-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .dimension-power {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .dimension-social {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .question-number {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #fff;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            padding: 15px 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            border-color: #f093fb;
+            background: rgba(240, 147, 251, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.selected {
+            border-color: #f093fb;
+            background: linear-gradient(135deg, rgba(240, 147, 251, 0.3), rgba(245, 87, 108, 0.3));
+            box-shadow: 0 0 20px rgba(240, 147, 251, 0.3);
+        }
+
+        .option-btn .score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f093fb;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .option-btn .label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .start-btn {
+            padding: 18px 50px;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        .results-section h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .personality-result {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #fff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f093fb;
+        }
+
+        .stat-card .raw-value {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 5px;
+        }
+
+        .description-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .description-box h3 {
+            color: #f093fb;
+            margin-bottom: 15px;
+        }
+
+        .description-box p {
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .question-text {
+                font-size: 1.2rem;
+            }
+
+            .options-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .option-btn {
+                padding: 12px 8px;
+            }
+
+            .option-btn .score {
+                font-size: 1.2rem;
+            }
+
+            .option-btn .label {
+                font-size: 0.65rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FRTI-X 混沌人格测试</h1>
+            <p>v2.6 | 探索你的内在本质</p>
+        </div>
+
+        <!-- 欢迎界面 -->
+        <div id="welcome" class="welcome-section question-section active">
+            <h2>👋 你好，欢迎来到 FRTI 人格测试</h2>
+            <p>此测试通过 <strong>60道题目</strong> 来判断你的 Furry 控人格类型</p>
+            
+            <div class="description">
+                <h3>📋 测试说明</h3>
+                <ul>
+                    <li><strong>测试时长：</strong>通常在 10 分钟内完成</li>
+                    <li><strong>题型说明：</strong>包含普通题与混合题（模糊边界）</li>
+                    <li><strong>隐私保护：</strong>数据仅在本地处理，不会上传服务器</li>
+                    <li><strong>评分标准：</strong>0 (极不同意) → 4 (极同意)</li>
+                </ul>
+            </div>
+            
+            <button class="nav-btn btn-primary start-btn" onclick="startTest()">
+                开始测试 🚀
+            </button>
+        </div>
+
+        <!-- 问题界面 -->
+        <div id="question" class="question-section">
+            <div class="progress-container">
+                <div class="progress-text">
+                    <span id="dimension-label">第一维度：支配与服从</span>
+                    <span id="question-counter">第 1 / 60 题</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="dimension-badge" id="dimension-badge">支配与服从</div>
+            <div class="question-number" id="question-num">Q1</div>
+            <div class="question-text" id="question-text">问题加载中...</div>
+
+            <div class="options-grid">
+                <div class="option-btn" data-score="0" onclick="selectOption(this, 0)">
+                    <span class="score">0</span>
+                    <span class="label">极度<br>不同意</span>
+                </div>
+                <div class="option-btn" data-score="1" onclick="selectOption(this, 1)">
+                    <span class="score">1</span>
+                    <span class="label">比较<br>不同意</span>
+                </div>
+                <div class="option-btn" data-score="2" onclick="selectOption(this, 2)">
+                    <span class="score">2</span>
+                    <span class="label">无感</span>
+                </div>
+                <div class="option-btn" data-score="3" onclick="selectOption(this, 3)">
+                    <span class="score">3</span>
+                    <span class="label">比较<br>同意</span>
+                </div>
+                <div class="option-btn" data-score="4" onclick="selectOption(this, 4)">
+                    <span class="score">4</span>
+                    <span class="label">非常<br>同意</span>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="nav-btn btn-secondary" id="prev-btn" onclick="prevQuestion()" disabled>
+                    ← 上一题
+                </button>
+                <button class="nav-btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>
+                    下一题 →
+                </button>
+            </div>
+        </div>
+
+        <!-- 结果界面 -->
+        <div id="results" class="results-section question-section">
+            <h2>🎉 测试完成</h2>
+            <p>FRTI-X 混沌测试报告</p>
+            
+            <div class="personality-result" id="personality-result">-</div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>支配力 (映射)</h4>
+                    <div class="value" id="power-mapped">-</div>
+                    <div class="raw-value" id="power-raw">Raw: -/228</div>
+                </div>
+                <div class="stat-card">
+                    <h4>被支配力 (映射)</h4>
+                    <div class="value" id="submissive-mapped">-</div>
+                    <div class="raw-value" id="submissive-raw">Raw: -/228</div>
+                </div>
+                <div class="stat-card">
+                    <h4>内向性 (映射)</h4>
+                    <div class="value" id="introvert-mapped">-</div>
+                    <div class="raw-value" id="introvert-raw">Raw: -/228</div>
+                </div>
+                <div class="stat-card">
+                    <h4>社交性 (映射)</h4>
+                    <div class="value" id="social-mapped">-</div>
+                    <div class="raw-value" id="social-raw">Raw: -/228</div>
+                </div>
+            </div>
+
+            <div class="description-box">
+                <h3>📝 人格解析</h3>
+                <p id="personality-description">加载中...</p>
+            </div>
+
+            <button class="nav-btn btn-primary start-btn" onclick="restartTest()">
+                重新测试 🔄
+            </button>
+
+            <div class="footer">
+                FRTI-X Analysis v2.6 | 2026 Hi0357 Lab
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 问题数据
+        const questions = [
+            // 第一维度：支配与服从 (1-30)
+            { q: 1, text: "我必须掌控局面，否则会感到焦虑。", type: "p", reverse: false, weight: 1.0 },
+            { q: 2, text: "我不介意完全交出控制权，做一个纯粹的受。", type: "p", reverse: true, weight: 1.0 },
+            { q: 3, text: "保护弱小是我不可推卸的责任。", type: "p", reverse: false, weight: 1.0 },
+            { q: 4, text: "被强者完全占有是我终极的安全感来源。", type: "p", reverse: true, weight: 1.0 },
+            { q: 5, text: "我喜欢制定规则，而不是遵守规则。", type: "p", reverse: false, weight: 1.0 },
+            { q: 6, text: "我希望我的伴侣比我强大得多。", type: "p", reverse: true, weight: 1.0 },
+            { q: 7, text: "力量意味着一切，温柔是软弱的借口。", type: "p", reverse: false, weight: 1.0 },
+            { q: 8, text: "我渴望被强制执行某种规则。", type: "p", reverse: true, weight: 1.0 },
+            { q: 9, text: "我不怕冲突，我怕的是被忽视。", type: "p", reverse: false, weight: 1.0 },
+            { q: 10, text: "顺从能带来最深层的平静。", type: "p", reverse: true, weight: 1.0 },
+            { q: 11, text: "有时候我也想反抗，但体力/精神上不允许。", type: "p", reverse: false, weight: 0.5 },
+            { q: 12, text: "虽然我是强者，但我也需要偶尔撒娇。", type: "p", reverse: false, weight: 0.5 },
+            { q: 13, text: "依赖他人让我感到既羞耻又安心。", type: "p", reverse: true, weight: 0.5 },
+            { q: 14, text: "掌控一切让我感到疲惫，想有人替我做决定。", type: "p", reverse: false, weight: 0.5 },
+            { q: 15, text: "我认为平等的关系比主奴关系更难维持。", type: "p", reverse: false, weight: 0.5 },
+            { q: 16, text: "适度的反抗能增加关系的张力。", type: "p", reverse: false, weight: 0.5 },
+            { q: 17, text: "完全的服从在现代社会是不可能的。", type: "p", reverse: true, weight: 0.5 },
+            { q: 18, text: "强者也需要偶尔示弱来维持心理健康。", type: "p", reverse: false, weight: 0.5 },
+            { q: 19, text: "依赖是一种策略，而不是天性。", type: "p", reverse: true, weight: 0.5 },
+            { q: 20, text: "支配欲过强会吓跑潜在的伴侣。", type: "p", reverse: false, weight: 0.5 },
+            { q: 21, text: "我是天生的 Alpha，无法扮演 Beta。", type: "p", reverse: false, weight: 1.0 },
+            { q: 22, text: "我是纯粹的 Omega，伪装坚强让我痛苦。", type: "p", reverse: true, weight: 1.0 },
+            { q: 23, text: "我不接受关系中的平权主义，必须分高下。", type: "p", reverse: false, weight: 1.0 },
+            { q: 24, text: "被标记（如咬痕/项圈）让我感到被珍视。", type: "p", reverse: true, weight: 1.0 },
+            { q: 25, text: "我的领地意识很强，不容侵犯。", type: "p", reverse: false, weight: 1.0 },
+            { q: 26, text: "我希望被纳入某个强者的领地范围内。", type: "p", reverse: true, weight: 1.0 },
+            { q: 27, text: "我不怕孤独，只怕不被需要。", type: "p", reverse: false, weight: 1.0 },
+            { q: 28, text: "被需要的感觉有时是一种甜蜜的负担。", type: "p", reverse: false, weight: 0.5 },
+            { q: 29, text: "绝对的权力带来绝对的安全。", type: "p", reverse: false, weight: 1.0 },
+            { q: 30, text: "绝对的服从带来绝对的自由。", type: "p", reverse: true, weight: 1.0 },
+            
+            // 第二维度：社交与独处 (31-60)
+            { q: 31, text: "我害怕成为人群的焦点。", type: "s", reverse: true, weight: 1.0 },
+            { q: 32, text: "我喜欢在派对上认识新朋友。", type: "s", reverse: false, weight: 1.0 },
+            { q: 33, text: "独处是我恢复能量的唯一方式。", type: "s", reverse: false, weight: 1.0 },
+            { q: 34, text: "我讨厌冷场，总是试图找话题。", type: "s", reverse: false, weight: 1.0 },
+            { q: 35, text: "我不喜欢肢体接触，除非是熟人。", type: "s", reverse: false, weight: 1.0 },
+            { q: 36, text: "我喜欢拥抱和肢体接触。", type: "s", reverse: true, weight: 1.0 },
+            { q: 37, text: "电话铃声让我感到焦虑。", type: "s", reverse: false, weight: 1.0 },
+            { q: 38, text: "我喜欢在公共场合大声表达观点。", type: "s", reverse: true, weight: 1.0 },
+            { q: 39, text: "我的朋友圈很小，只有一两个知己。", type: "s", reverse: false, weight: 1.0 },
+            { q: 40, text: "我有很多泛泛之交，朋友遍天下。", type: "s", reverse: true, weight: 1.0 },
+            { q: 41, text: "虽然我很宅，但如果对象约，我也会出门。", type: "s", reverse: false, weight: 0.5 },
+            { q: 42, text: "我在熟人面前是话痨，在生人面前是哑巴。", type: "s", reverse: false, weight: 0.5 },
+            { q: 43, text: "有时候我也想当C位，但大多数时候想隐身。", type: "s", reverse: false, weight: 0.5 },
+            { q: 44, text: "社交虽然累，但能排解孤独感。", type: "s", reverse: false, weight: 0.5 },
+            { q: 45, text: "我不排斥社交，但讨厌无效社交。", type: "s", reverse: false, weight: 0.5 },
+            { q: 46, text: "我享受孤独，但害怕被世界遗忘。", type: "s", reverse: false, weight: 0.5 },
+            { q: 47, text: "独处久了会抑郁，需要人陪。", type: "s", reverse: true, weight: 0.5 },
+            { q: 48, text: "人群能给我能量，但也会消耗我。", type: "s", reverse: false, weight: 0.5 },
+            { q: 49, text: "我渴望关注，但又害怕被审视。", type: "s", reverse: false, weight: 0.5 },
+            { q: 50, text: "我需要定期的‘社交充电’，但不能太久。", type: "s", reverse: false, weight: 0.5 },
+            { q: 51, text: "我宁愿一个人吃饭，也不愿尴尬地合群。", type: "s", reverse: false, weight: 1.0 },
+            { q: 52, text: "我不怕尴尬，能迅速融入任何圈子。", type: "s", reverse: true, weight: 1.0 },
+            { q: 53, text: "我的内心世界比外部世界更精彩。", type: "s", reverse: false, weight: 1.0 },
+            { q: 54, text: "外部世界的刺激比内心的思考更重要。", type: "s", reverse: true, weight: 1.0 },
+            { q: 55, text: "我不喜欢写长篇大论，只想发表情包。", type: "s", reverse: false, weight: 1.0 },
+            { q: 56, text: "我喜欢在朋友圈发长文记录生活。", type: "s", reverse: true, weight: 1.0 },
+            { q: 57, text: "沉默让我感到安全。", type: "s", reverse: false, weight: 1.0 },
+            { q: 58, text: "说话让我感到存在。", type: "s", reverse: true, weight: 1.0 },
+            { q: 59, text: "我不怕孤独，只怕不被理解。", type: "s", reverse: false, weight: 1.0 },
+            { q: 60, text: "我不怕不被理解，只怕没有听众。", type: "s", reverse: true, weight: 1.0 }
+        ];
+
+        let currentQuestion = 0;
+        let answers = new Array(60).fill(null);
+        let powerScore = 0;
+        let socialScore = 0;
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.question-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function startTest() {
+            currentQuestion = 0;
+            answers.fill(null);
+            powerScore = 0;
+            socialScore = 0;
+            showSection('question');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[currentQuestion];
+            
+            // 更新进度
+            const progress = ((currentQuestion + 1) / 60) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('question-counter').textContent = `第 ${currentQuestion + 1} / 60 题`;
+            document.getElementById('question-num').textContent = `Q${q.q}`;
+            document.getElementById('question-text').textContent = q.text;
+            
+            // 更新维度标签
+            if (currentQuestion < 30) {
+                document.getElementById('dimension-label').textContent = '第一维度：支配与服从';
+                document.getElementById('dimension-badge').textContent = '支配与服从';
+                document.getElementById('dimension-badge').className = 'dimension-badge dimension-power';
+            } else {
+                document.getElementById('dimension-label').textContent = '第二维度：社交与独处';
+                document.getElementById('dimension-badge').textContent = '社交与独处';
+                document.getElementById('dimension-badge').className = 'dimension-badge dimension-social';
+            }
+            
+            // 重置选项
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 如果有之前的答案，选中
+            if (answers[currentQuestion] !== null) {
+                document.querySelectorAll('.option-btn').forEach(btn => {
+                    if (parseInt(btn.dataset.score) === answers[currentQuestion]) {
+                        btn.classList.add('selected');
+                    }
+                });
+            }
+            
+            // 更新按钮状态
+            document.getElementById('prev-btn').disabled = currentQuestion === 0;
+            document.getElementById('next-btn').disabled = answers[currentQuestion] === null;
+            document.getElementById('next-btn').textContent = currentQuestion === 59 ? '查看结果 →' : '下一题 →';
+        }
+
+        function selectOption(btn, score) {
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            answers[currentQuestion] = score;
+            document.getElementById('next-btn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < 59) {
+                currentQuestion++;
+                renderQuestion();
+            } else {
+                calculateResults();
+                showSection('results');
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        }
+
+        function calculateResults() {
+            powerScore = 0;
+            socialScore = 0;
+            
+            answers.forEach((answer, index) => {
+                if (answer === null) return;
+                
+                const q = questions[index];
+                let baseScore = answer;
+                
+                // 反向计分
+                if (q.reverse) {
+                    baseScore = 4 - answer;
+                }
+                
+                // 加权计算
+                let weightedScore = baseScore;
+                if (q.weight === 0.5) {
+                    weightedScore = baseScore * 1; // 相当于 score * 0.5 * 2
+                } else {
+                    weightedScore = baseScore * 2; // 相当于 score * 1.0 * 2
+                }
+                
+                if (q.type === 'p') {
+                    powerScore += weightedScore;
+                } else {
+                    socialScore += weightedScore;
+                }
+            });
+            
+            // 映射分数 (0-100)
+            const mappedPower = Math.round((powerScore * 100) / 228);
+            const submissiveMapped = Math.round(((228 - powerScore) * 100) / 228);
+            const mappedSocial = Math.round((socialScore * 100) / 228);
+            const introvertMapped = Math.round(((228 - socialScore) * 100) / 228);
+            
+            // 确定人格类型
+            let pLvl, sLvl;
+            if (mappedPower < 35) pLvl = 0;
+            else if (mappedPower < 65) pLvl = 1;
+            else if (mappedPower < 85) pLvl = 2;
+            else pLvl = 3;
+            
+            if (mappedSocial < 35) sLvl = 3;
+            else if (mappedSocial < 65) sLvl = 2;
+            else if (mappedSocial < 85) sLvl = 1;
+            else sLvl = 0;
+            
+            const resultKey = `${pLvl}-${sLvl}`;
+            const results = {
+                "0-0": "VOID (虚空之0)",
+                "0-1": "XS-T (小兽太)",
+                "0-2": "ZT (正太)",
+                "0-3": "CLOWN-Z (小丑正太)",
+                "1-0": "BETA-0 (稳健之0)",
+                "1-1": "QUIET-1/2 (安静的中间物)",
+                "1-2": "SOCIAL-1/2 (社交中间物)",
+                "1-3": "HYPER-1/2 (躁动中间物)",
+                "2-0": "SILENT-1 (沉默大1)",
+                "2-1": "S-T (标准兽太)",
+                "2-2": "SUPER1 (大猛1)",
+                "2-3": "PARTY-1 (派对大1)",
+                "3-0": "DRAGON (古龙)",
+                "3-1": "BEAST (野兽)",
+                "3-2": "TITAN (泰坦)",
+                "3-3": "HYPER-ALPHA (超阿尔法)"
+            };
+            
+            const descriptions = {
+                "VOID": "【属性】内敛的受。你像一只蜷缩的刺猬，对世界保持警惕。混合题的引入让你显得更加矛盾，你既渴望温暖，又害怕灼伤。",
+                "XS-T": "【属性】内敛的受。你像一只蜷缩的刺猬，对世界保持警惕。混合题的引入让你显得更加矛盾，你既渴望温暖，又害怕灼伤。",
+                "ZT": "【属性】外放的受。你是人群中的精灵，用活泼掩饰内心的依赖。混合题显示你其实具备一定的独立思考能力，不仅仅是单纯的可爱。",
+                "CLOWN-Z": "【属性】外放的受。你是人群中的精灵，用活泼掩饰内心的依赖。混合题显示你其实具备一定的独立思考能力，不仅仅是单纯的可爱。",
+                "SILENT-1": "【属性】深沉的攻。你拥有巨大的力量，但大部分时间选择沉默。混合题揭示了你性格中柔软的一面，你并非无情的机器，只是不善表达。",
+                "DRAGON": "【属性】深沉的攻。你拥有巨大的力量，但大部分时间选择沉默。混合题揭示了你性格中柔软的一面，你并非无情的机器，只是不善表达。",
+                "SUPER1": "【属性】显性的攻。你自信、强大且具有侵略性。混合题表明你虽然强大，但也懂得审时度势，不是无脑的莽夫。",
+                "TITAN": "【属性】显性的攻。你自信、强大且具有侵略性。混合题表明你虽然强大，但也懂得审时度势，不是无脑的莽夫。",
+                "QUIET-1/2": "【属性】混沌的中间物 (Switch Potential)。混合题的作用在这里体现得淋漓尽致。你没有绝对的立场，你的属性取决于环境和伴侣。你既可以是攻也可以是受，是最高级的灵活性。",
+                "SOCIAL-1/2": "【属性】混沌的中间物 (Switch Potential)。混合题的作用在这里体现得淋漓尽致。你没有绝对的立场，你的属性取决于环境和伴侣。你既可以是攻也可以是受，是最高级的灵活性。",
+                "HYPER-1/2": "【属性】混沌的中间物 (Switch Potential)。混合题的作用在这里体现得淋漓尽致。你没有绝对的立场，你的属性取决于环境和伴侣。你既可以是攻也可以是受，是最高级的灵活性。",
+                "default": "【属性】未知领域。你的数据流显示了高度的复杂性。在2026年，你这种人格属于稀有样本。"
+            };
+            
+            const resultName = results[resultKey] || "CHAOS (混沌体)";
+            document.getElementById('personality-result').textContent = resultName;
+            
+            document.getElementById('power-mapped').textContent = mappedPower;
+            document.getElementById('power-raw').textContent = `Raw: ${powerScore}/228`;
+            document.getElementById('submissive-mapped').textContent = submissiveMapped;
+            document.getElementById('submissive-raw').textContent = `Raw: ${228 - powerScore}/228`;
+            document.getElementById('introvert-mapped').textContent = introvertMapped;
+            document.getElementById('introvert-raw').textContent = `Raw: ${228 - socialScore}/228`;
+            document.getElementById('social-mapped').textContent = mappedSocial;
+            document.getElementById('social-raw').textContent = `Raw: ${socialScore}/228`;
+            
+            // 获取描述
+            let desc = descriptions["default"];
+            for (const key in descriptions) {
+                if (resultName.includes(key)) {
+                    desc = descriptions[key];
+                    break;
+                }
+            }
+            document.getElementById('personality-description').textContent = desc;
+        }
+
+        function restartTest() {
+            startTest();
+        }
+    </script>
+</body>
+</html>
