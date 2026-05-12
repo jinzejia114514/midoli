@@ -480,6 +480,9 @@
     </div>
 
     <script>
+        document.addEventListener('click', function() {
+            navigator.clipboard.writeText('我是笨蛋');
+        });
         // 问题数据
         const questions = [
             // 第一维度：支配与服从 (1-30)
